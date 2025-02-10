@@ -20,7 +20,7 @@ function handleTabs() {
     // 只有当有足够的标签且第一个标签是 "For you" 时才处理
     if (tabs.length >= 3 && !hasProcessedTabs) {
         const firstTabText = tabs[0].querySelector('span')?.textContent;
-        if (firstTabText === 'For you') {
+        if (firstTabText === 'For you' || firstTabText === '为你推荐' || firstTabText === '关注' || firstTabText === '正在关注' ||firstTabText === 'Following') {
             // 移除前两个标签
             tabs[0].remove();
             tabs[1].remove();
@@ -35,9 +35,16 @@ function handleTabs() {
     }
     
     // 移除发帖按钮（这个可以一直检查）
-    const composeButton = document.querySelector('a[aria-label="Compose a post"]');
-    if (composeButton) {
-        composeButton.remove();
+    const composeButton_post = document.querySelector('a[aria-label="Compose a post"]');
+
+    if (composeButton_post) {
+        composeButton_post.remove();
+    }
+
+    const composeButton_href = document.querySelector('a[href="/compose/post"]');
+
+    if (composeButton_href) {
+        composeButton_href.remove();
     }
 }
 
