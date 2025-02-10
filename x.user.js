@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         x-tab-switcher
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @updateURL    https://aimoment29.github.io/PublicTemp/x.user.js
 // @description  移除 X/Twitter 的前两个标签页，并默认显示第三个标签页，隐藏打开App提示
 // @match        https://x.com/*
@@ -18,18 +18,21 @@ GM_addStyle(`
 `);
 
 function n() {
-    const tabs = document.querySelectorAll('div[role="presentation"]');
-    return tabs.length >= 3;
+    const tabs = document.querySelector('div[role="tablist"]')?.querySelectorAll('div[role="presentation"]');
+    return tabs?.length >= 3;
 }
 
 function r() {
-    const tabs = Array.from(document.querySelectorAll('div[role="presentation"]'));
+    const tablist = document.querySelector('div[role="tablist"]');
+    if (!tablist) return;
+    
+    const tabs = Array.from(tablist.querySelectorAll('div[role="presentation"]'));
     if (tabs.length >= 3) {
-        // 移除前两个标签
-        tabs[0].remove();
+        // 移除第二和第三个标签
         tabs[1].remove();
-        // 点击第三个标签
-        const thirdTab = tabs[2].querySelector('span');
+        tabs[2].remove();
+        // 点击第四个标签
+        const thirdTab = tabs[3].querySelector('span');
         if (thirdTab) {
             thirdTab.click();
         }
