@@ -2,6 +2,7 @@
 // @name         x-tab-switcher
 // @namespace    http://tampermonkey.net/
 // @version      1.0
+// @updateURL    https://aimoment29.github.io/PublicTemp/x.user.js
 // @description  移除 X/Twitter 的前两个标签页，并默认显示第三个标签页
 // @match        https://x.com/*
 // @match        https://twitter.com/*
