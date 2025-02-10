@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         x-tab-switcher
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @updateURL    https://aimoment29.github.io/PublicTemp/x.user.js
 // @description  移除 X/Twitter 的前两个标签页，并默认显示第三个标签页，隐藏打开App提示
 // @match        https://x.com/*
@@ -18,22 +18,22 @@ GM_addStyle(`
 `);
 
 function n() {
-    var e = Array.from(document.querySelectorAll("span")).find(e => "For you" === e.textContent),
-        t = Array.from(document.querySelectorAll("span")).find(e => "Following" === e.textContent),
-        f = Array.from(document.querySelectorAll("span")).find(e => "美食天下" === e.textContent);
-    return e && t && f
+    const tabs = document.querySelectorAll('div[role="presentation"]');
+    return tabs.length >= 3;
 }
 
 function r() {
-    document.querySelectorAll("span").forEach(e => {
-        if ("For you" == e.textContent) {
-            e.closest('div[role="presentation"]').remove()
-        } else if ("Following" == e.textContent) {
-            e.closest('div[role="presentation"]').remove()
-        } else if ("美食天下" == e.textContent) {
-            e.click()
+    const tabs = Array.from(document.querySelectorAll('div[role="presentation"]'));
+    if (tabs.length >= 3) {
+        // 移除前两个标签
+        tabs[0].remove();
+        tabs[1].remove();
+        // 点击第三个标签
+        const thirdTab = tabs[2].querySelector('span');
+        if (thirdTab) {
+            thirdTab.click();
         }
-    })
+    }
 }
 
 const e = (e, t) => {
