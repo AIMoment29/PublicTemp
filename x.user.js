@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         x-tab-switcher
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @updateURL    https://aimoment29.github.io/PublicTemp/x.user.js
 // @description  移除 X/Twitter 的前两个标签页，并默认显示第三个标签页，隐藏打开App提示
 // @match        https://x.com/*
@@ -23,6 +23,13 @@ function handleTabs() {
         const thirdTab = tabs[2].querySelector('span');
         if (thirdTab) {
             thirdTab.click();
+            
+            // 移除发帖按钮
+            const composeButton = document.querySelector('a[aria-label="Compose a post"]');
+            if (composeButton) {
+                composeButton.remove();
+            }
+            
             return true;
         }
     }
