@@ -9,6 +9,7 @@
 // @grant        GM_addStyle
 // ==/UserScript==
 
+let firstOpen = true
 let hasProcessedTabs = false;
 
 function handleTabs() {
@@ -27,10 +28,12 @@ function handleTabs() {
             tabs[1].remove();
             
             // 点击第三个标签
-            const thirdTab = tabs[2].querySelector('span');
-            if (thirdTab) {
-                thirdTab.click();
-                hasProcessedTabs = true;
+            if (firstOpen){
+                const thirdTab = tabs[2].querySelector('span');
+                if (thirdTab) {
+                    thirdTab.click();
+                    hasProcessedTabs = true;
+                }
             }
         }
     }
@@ -55,6 +58,7 @@ setInterval(() => {
     const currentUrl = location.href;
     if (currentUrl !== lastUrl) {
         lastUrl = currentUrl;
+        firstOpen= false;
         // 只有在返回主页时才重置状态
         if (currentUrl === 'https://x.com/home' || currentUrl === 'https://twitter.com/home') {
             hasProcessedTabs = false;
