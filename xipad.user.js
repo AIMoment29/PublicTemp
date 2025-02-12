@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         x-tab-switcher
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.5
 // @updateURL    https://aimoment29.github.io/PublicTemp/xipad.user.js
 // @description  移除 X/Twitter 的前两个标签页，并默认显示第三个标签页，隐藏打开App提示
 // @match        https://x.com/*
@@ -9,6 +9,7 @@
 // @grant        GM_addStyle
 // ==/UserScript==
 
+let firstOpen = true
 let hasProcessedTabs = false;
 
 // 处理布局的函数
@@ -47,10 +48,12 @@ function handleTabs() {
             tabs[1].remove();
             
             // 点击第三个标签
-            const thirdTab = tabs[2].querySelector('span');
-            if (thirdTab) {
-                thirdTab.click();
-                hasProcessedTabs = true;
+            if (firstOpen){
+                const thirdTab = tabs[2].querySelector('span');
+                if (thirdTab) {
+                    thirdTab.click();
+                    hasProcessedTabs = true;
+                }
             }
         }
     }
@@ -74,6 +77,7 @@ setInterval(() => {
     const currentUrl = location.href;
     if (currentUrl !== lastUrl) {
         lastUrl = currentUrl;
+        firstOpen= false;
         // 只有在返回主页时才重置状态
         if (currentUrl === 'https://x.com/home' || currentUrl === 'https://twitter.com/home') {
             hasProcessedTabs = false;
