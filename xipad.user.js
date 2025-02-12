@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         x-tab-switcher
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @updateURL    https://aimoment29.github.io/PublicTemp/xipad.user.js
 // @description  移除 X/Twitter 的前两个标签页，并默认显示第三个标签页，隐藏打开App提示
 // @match        https://x.com/*
@@ -84,8 +84,8 @@ setInterval(() => {
         }
     }
     handleTabs();
-    handleLayout(); // 每次检查都处理布局
+    // handleLayout(); // 每次检查都处理布局
 }, 1000);
 
 // 初始执行布局处理
-handleLayout();
+// handleLayout();
