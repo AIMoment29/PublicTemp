@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         x-tab-switcher
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.8
 // @updateURL    https://aimoment29.github.io/PublicTemp/xipad.user.js
 // @description  移除 X/Twitter 的前两个标签页，并默认显示第三个标签页，隐藏打开App提示
 // @match        https://x.com/*
@@ -15,10 +15,10 @@ let hasProcessedTabs = false;
 // 处理布局的函数
 function handleLayout() {
     
-    // 移除侧边栏
+    // 隐藏侧边栏而不是删除
     const sidebarColumn = document.querySelector('div[data-testid="sidebarColumn"]');
     if (sidebarColumn) {
-        sidebarColumn.remove();
+        sidebarColumn.style.display = 'none';
     }
 
     // 设置主列宽度为100%并移除限制类
