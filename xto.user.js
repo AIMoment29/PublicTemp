@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         x-to-expander
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.6
 // @updateURL    https://aimoment29.github.io/PublicTemp/xto.user.js
 // @description  将 X/Twitter 的 t.co 短链接替换为原始链接
 // @match        https://x.com/*
@@ -15,14 +15,13 @@ function expandShortLinks() {
     const links = document.querySelectorAll('a[href*="t.co"]');
     
     links.forEach(link => {
-        // 直接获取链接的文本内容
-        const fullUrl = link.textContent.trim();
+        // 获取链接文本并去除末尾的省略号
+        let fullUrl = link.textContent.trim().replace('…', '').replace('%E2%80%A6', '');
             
         if (fullUrl && !fullUrl.includes('t.co')) {
             // 更新链接
             link.href = fullUrl;
-            
-            // 添加点击事件处理
+                        // 添加点击事件处理
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
