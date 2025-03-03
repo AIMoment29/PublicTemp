@@ -86,6 +86,7 @@
             align-items: center;
             cursor: pointer;
             text-align: center;
+            text-decoration: none;
         }
 
         .link-icon {
@@ -119,79 +120,8 @@
             max-width: 100px;
         }
 
-        /* 模态框样式 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            transform: translateY(20px);
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .modal.show .modal-content {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .modal-title {
-            font-size: 1.5em;
-            margin-bottom: 15px;
-            color: #1da1f2;
-        }
-
-        .modal-desc {
-            margin-bottom: 20px;
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .modal-button {
-            background: #1da1f2;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background 0.3s;
-        }
-
-        .modal-button:hover {
-            background: #0d8bd9;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 1.5em;
-            cursor: pointer;
-            color: #666;
+        .modal, .modal-content, .modal-title, .modal-desc, .modal-button, .modal-close {
+            display: none;
         }
 
         @media (max-width: 600px) {
@@ -225,58 +155,40 @@
 
     <div class="container" id="app"></div>
 
-    <!-- 模态框 -->
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeModal()">&times;</span>
-            <h2 class="modal-title" id="modal-title"></h2>
-            <p class="modal-desc" id="modal-desc"></p>
-            <button class="modal-button" id="modal-button">访问网站</button>
-        </div>
-    </div>
-
     <script>
         const navData = {
             'AIMoment': [
                 {
                     title: 'X 插件',
                     url: 'https://ysgiw1qjanji.sg.larksuite.com/wiki/KJVRwf8cEinSMrkXmBVlmZzJgxf',
-                    desc: 'x 插件显示优化脚本',
                     icon: 'https://ysgiw1qjanji.sg.larksuite.com/favicon.ico'
                 },
                 {
                     title: 'PDF 文件翻译',
                     url: 'http://52.196.252.39:7860/',
-                    desc: 'PDF 文件翻译，保留原文件格式。',
                     icon: 'https://github.com/favicon.ico'
                 }
             ],
             '实用工具': [
-
                 {
                     title: 'ChatGPT',
                     url: 'https://chat.openai.com',
-                    desc: 'OpenAI 开发的强大AI聊天助手，支持自然语言交互，可用于写作、编程、分析等多种场景。',
                     icon: 'https://chat.openai.com/favicon.ico'
                 },
                 {
                     title: '免费文本格式转换器',
                     url: 'https://www.vertopal.com/',
-                    desc: 'Vertopal 是一个在线平台，允许用户将计算机文件转换为各种格式。网站的重点是提供高质量的文件转换服务，无需安装第三方软件。',
                     icon: 'https://www.vertopal.com/favicon.ico'
                 },
                 {
                     title: 'ima-免费用deepseek',
                     url: 'https://ima.qq.com/',
-                    desc: '腾讯出品的平台，可以用满血的 deepseek 模型',
                     icon: 'https://ima.qq.com/favicon.ico'
                 },
                 {
                     title: '免费 Youtube 在线下载',
                     url: 'https://addyoutube.com/result',
-                    desc: '一款好用的 Youtube 视频在线下载网站',
                     icon: 'https://addyoutube.com/favicon.ico'
-        
                 }
             ]
         };
@@ -286,19 +198,20 @@
             let html = '';
 
             for (const [category, links] of Object.entries(navData)) {
-                html += `                    <div class="category">
+                html += `
+                    <div class="category">
                         <h2 class="category-title">${category}</h2>
                         <div class="links-grid">
                             ${links.map(link => `
                                 <div class="link-card">
-                                    <div class="link-content" onclick="showModal('${link.title}', '${link.desc}', '${link.url}')">
+                                    <a href="${link.url}" class="link-content" target="_blank">
                                         <div class="link-icon">
                                             <img src="${link.icon}" 
                                                  onerror="this.style.display='none';this.parentElement.innerHTML='${link.title[0]}'" 
                                                  alt="${link.title}">
                                         </div>
                                         <span class="link-title">${link.title}</span>
-                                    </div>
+                                    </a>
                                 </div>
                             `).join('')}
                         </div>
@@ -307,27 +220,6 @@
             }
 
             app.innerHTML = html;
-        }
-
-        function showModal(title, desc, url) {
-            const modal = document.getElementById('modal');
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-desc').textContent = desc;
-            document.getElementById('modal-button').onclick = () => window.open(url, '_blank');
-            modal.classList.add('show');
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('modal');
-            modal.classList.remove('show');
-        }
-
-        // 点击模态框外部关闭
-        window.onclick = function (event) {
-            const modal = document.getElementById('modal');
-            if (event.target == modal) {
-                closeModal();
-            }
         }
 
         // 初始化
