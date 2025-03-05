@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         x-button-adder
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.2
 // @updateURL    https://aimoment29.github.io/PublicTemp/xbutton.user.js
 // @description  为 X/Twitter 添加自定义按钮
 // @match        https://x.com/*
 // @match        https://twitter.com/*
 // @grant        GM_addStyle
+// @grant        GM_xmlhttpRequest
+// @connect      127.0.0.1
 // ==/UserScript==
 
 // 添加提示样式
@@ -38,33 +40,67 @@ style.textContent = `
 document.head.appendChild(style);
 
 // 显示提示的函数
-function showAlert(message) {
+function showAlert(message, status = true) {
     const alert = document.createElement('div');
     alert.className = 'custom-alert';
     alert.textContent = message;
+    
+    // 根据状态设置不同的背景色
+    if (status === 'loading') {
+        alert.style.background = '#f4a100';  // 黄色
+    } else {
+        alert.style.background = status ? '#1da1f2' : '#e0245e';  // 蓝色或红色
+    }
+    
     document.body.appendChild(alert);
     
-    setTimeout(() => {
-        alert.remove();
-    }, 3000);
+    // 如果是加载中状态，不自动移除
+    if (status !== 'loading') {
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
+    }
+    
+    return alert;  // 返回alert元素以便后续移除
 }
 
 // 发送推文信息的函数
 function sendTweetInfo(tweet, type) {
+    // 显示加载中提示
+    showAlert('收集中...', 'loading');
+
     const tweetData = {
+        type: type,
         url: tweet.querySelector('a[role="link"][href*="/status/"]')?.href || '',
-        author: tweet.querySelector('div[data-testid="User-Name"] a')?.textContent || '',
         content: tweet.querySelector('div[data-testid="tweetText"]')?.textContent || '',
         time: tweet.querySelector('time')?.dateTime || '',
-        type: type
+        author: tweet.querySelector('div[data-testid="User-Name"] a')?.textContent || ''
     };
 
-    showAlert(`收集成功！
-        类型: ${type}
-        作者: ${tweetData.author}
-        内容: ${tweetData.content.substring(0, 50)}...
-        时间: ${tweetData.time}
-        链接: ${tweetData.url}`);
+    // 使用 GM_xmlhttpRequest 发送数据
+    GM_xmlhttpRequest({
+        method: 'POST',
+        url: 'https://aimoment.defg.uk/lark/add',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(tweetData),
+        onload: function(response) {
+            try {
+                const result = JSON.parse(response.responseText);
+                if (result.code === 200) {
+                    showAlert('收集成功！', true);
+                } else {
+                    showAlert('收集失败：请求异常', false);
+                }
+            } catch (error) {
+                showAlert('收集失败：响应格式错误', false);
+            }
+        },
+        onerror: function(error) {
+            showAlert('收集失败：请检查接口是否正常', false);
+        }
+    });
 }
 
 function addCustomIcons() {
