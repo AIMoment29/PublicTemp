@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         ChatGPT Swipe & Doubleclick to Input
+// @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.8
+// @version      1.9
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
-// @description  检测横向滑动或双击并将文本填入ChatGPT输入框
+// @description  检测横向滑动并将文本填入ChatGPT输入框
 // @author       xiniu
 // @match        https://chatgpt.com/*
 // @grant        none
@@ -12,18 +12,12 @@
 (function() {
     'use strict';
     
-    // 配置参数
+    // 滑动检测配置
     const config = {
-        // 滑动相关配置
         minSwipeDistance: 40,     // 最小横向滑动距离（像素）
         maxSwipeTime: 1000,       // 最大滑动时间（毫秒）
-        directionThreshold: 1.2,  // 横向滑动判定阈值（水平/垂直距离比率）
-        
-        // 双击相关配置
-        maxDoubleClickTime: 300,  // 双击的最大时间间隔（毫秒）
+        directionThreshold: 1.2   // 横向滑动判定阈值（水平/垂直距离比率）
     };
-    
-    // ====== 滑动相关变量和事件处理 ======
     
     // 初始化触摸变量
     let touchStartX = 0;
@@ -62,62 +56,14 @@
                 // 获取整个p标签的文本内容
                 const text = paragraphElement.textContent.trim();
                 
-                // 处理文本
-                processSelectedText(text, "滑动");
+                // 输入文本到ChatGPT编辑器
+                insertTextToChatGPT(text);
+                
+                // 在控制台显示调试信息
+                console.log(`检测到有效滑动，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
             }
         }
     }, false);
-    
-    // ====== 双击相关变量和事件处理 ======
-    
-    // 保存上次点击的时间和元素
-    let lastClickTime = 0;
-    let lastClickElement = null;
-    
-    // 监听点击事件
-    document.addEventListener('click', function(event) {
-        const currentTime = new Date().getTime();
-        const clickedElement = event.target;
-        
-        // 检查是否是双击（与上次点击的时间间隔小于阈值）
-        if (currentTime - lastClickTime < config.maxDoubleClickTime && clickedElement === lastClickElement) {
-            // 查找包含点击元素的 p 标签
-            const paragraphElement = findParentParagraph(clickedElement);
-            
-            if (paragraphElement) {
-                // 获取文本内容
-                const text = paragraphElement.textContent.trim();
-                
-                // 处理文本
-                processSelectedText(text, "双击");
-                
-                // 阻止默认的双击选择文本行为
-                event.preventDefault();
-            }
-            
-            // 重置点击记录，防止连续多次触发
-            lastClickTime = 0;
-            lastClickElement = null;
-        } else {
-            // 保存这次点击的信息，用于下次比较
-            lastClickTime = currentTime;
-            lastClickElement = clickedElement;
-        }
-    }, false);
-    
-    // ====== 公共功能函数 ======
-    
-    // 处理选中的文本
-    function processSelectedText(text, method) {
-        // 输入文本到ChatGPT编辑器
-        insertTextToChatGPT(text);
-        
-        // 显示反馈
-        showFeedback(text, method);
-        
-        // 在控制台显示调试信息
-        console.log(`通过${method}获取到文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
-    }
     
     // 将文本插入到ChatGPT编辑器
     function insertTextToChatGPT(text) {
@@ -190,9 +136,8 @@
                 console.error("直接DOM操作方法失败:", e);
             }
         } else {
-            // 如果找不到编辑器，尝试使用新的选择器或显示错误
+            // 如果找不到编辑器，输出错误日志
             console.error("找不到ChatGPT编辑器组件，请更新选择器");
-            alert("无法找到输入框，请检查ChatGPT界面是否已更新");
         }
     }
     
@@ -256,7 +201,7 @@
             current = current.parentElement;
         }
         
-        // 如果没有找到p标签，尝试从元素开始查找任何子p标签
+        // 如果没有找到p标签，尝试从触摸元素开始查找任何子p标签
         const pElements = element.querySelectorAll('p');
         if (pElements.length > 0) {
             // 返回第一个p标签
@@ -265,32 +210,5 @@
         
         // 如果实在找不到p标签，返回原始元素
         return element;
-    }
-    
-    // 显示反馈提示
-    function showFeedback(text, method) {
-        const feedback = document.createElement('div');
-        feedback.style.position = 'fixed';
-        feedback.style.bottom = '80px';
-        feedback.style.left = '50%';
-        feedback.style.transform = 'translateX(-50%)';
-        feedback.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        feedback.style.color = 'white';
-        feedback.style.padding = '8px 12px';
-        feedback.style.borderRadius = '4px';
-        feedback.style.zIndex = '10000';
-        feedback.style.maxWidth = '80%';
-        feedback.style.textOverflow = 'ellipsis';
-        feedback.style.overflow = 'hidden';
-        feedback.style.whiteSpace = 'nowrap';
-        
-        const previewText = text.length > 40 ? text.substring(0, 37) + '...' : text;
-        feedback.textContent = `已${method === "滑动" ? '滑动' : '双击'}复制: ${previewText}`;
-        
-        document.body.appendChild(feedback);
-        
-        setTimeout(() => {
-            document.body.removeChild(feedback);
-        }, 1500);
     }
 })();
