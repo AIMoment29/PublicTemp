@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
 // @description  检测横向滑动并将文本填入ChatGPT输入框
 // @author       xiniu
@@ -76,10 +76,8 @@
                     chatInput.focus();
                     
                     // 滚动输入框到底部
-                    chatInput.scrollTop = chatInput.scrollHeight;
-                    
-                    // 显示反馈
-                    showFeedback(text);
+                    // chatInput.scrollTop = chatInput.scrollHeight;
+
                 }
                 
                 // 显示滑动距离 (调试用)
@@ -122,32 +120,5 @@
         
         // 如果实在找不到p标签，返回原始元素
         return element;
-    }
-    
-    // 显示反馈提示
-    function showFeedback(text) {
-        const feedback = document.createElement('div');
-        feedback.style.position = 'fixed';
-        feedback.style.bottom = '80px';
-        feedback.style.left = '50%';
-        feedback.style.transform = 'translateX(-50%)';
-        feedback.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        feedback.style.color = 'white';
-        feedback.style.padding = '8px 12px';
-        feedback.style.borderRadius = '4px';
-        feedback.style.zIndex = '10000';
-        feedback.style.maxWidth = '80%';
-        feedback.style.textOverflow = 'ellipsis';
-        feedback.style.overflow = 'hidden';
-        feedback.style.whiteSpace = 'nowrap';
-        
-        const previewText = text.length > 40 ? text.substring(0, 37) + '...' : text;
-        feedback.textContent = `已复制: ${previewText}`;
-        
-        document.body.appendChild(feedback);
-        
-        setTimeout(() => {
-            document.body.removeChild(feedback);
-        }, 1500);
     }
 })();
