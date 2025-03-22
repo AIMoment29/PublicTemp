@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         ChatGPT Swipe Alert
+// @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
-// @description  检测横向滑动并弹出元素的文本内容
+// @description  检测横向滑动并将文本填入ChatGPT输入框
 // @author       xiniu
 // @match        https://chatgpt.com/*
 // @grant        none
@@ -56,10 +56,30 @@
                 // 获取整个p标签的文本内容
                 const text = paragraphElement.textContent.trim();
                 
-                // 弹出文本内容
-                alert('滑动元素文本内容：\n' + text);
+                // 找到ChatGPT输入框
+                const chatInput = document.querySelector('textarea[data-id="root"]');
+                if (chatInput && text) {
+                    // 获取当前输入框内容
+                    const currentText = chatInput.value;
+                    
+                    // 将文本填入输入框并添加换行符
+                    chatInput.value = currentText + (currentText ? '\n' : '') + text + '\n';
+                    
+                    // 触发输入事件以更新输入框高度和内部状态
+                    const inputEvent = new Event('input', { bubbles: true });
+                    chatInput.dispatchEvent(inputEvent);
+                    
+                    // 聚焦到输入框
+                    chatInput.focus();
+                    
+                    // 滚动输入框到底部
+                    chatInput.scrollTop = chatInput.scrollHeight;
+                    
+                    // 显示反馈
+                    showFeedback(text);
+                }
                 
-                // 显示滑动距离
+                // 显示滑动距离 (调试用)
                 console.log(`检测到横向滑动: ${distanceX}px，垂直距离: ${distanceY}px，时间: ${elapsedTime}ms`);
             }
         }
@@ -101,23 +121,30 @@
         return element;
     }
     
-    // 添加调试显示
-    function showDebugInfo(message) {
-        const debugInfo = document.createElement('div');
-        debugInfo.style.position = 'fixed';
-        debugInfo.style.bottom = '10px';
-        debugInfo.style.left = '10px';
-        debugInfo.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        debugInfo.style.color = 'white';
-        debugInfo.style.padding = '5px';
-        debugInfo.style.borderRadius = '3px';
-        debugInfo.style.zIndex = '10000';
-        debugInfo.textContent = message;
+    // 显示反馈提示
+    function showFeedback(text) {
+        const feedback = document.createElement('div');
+        feedback.style.position = 'fixed';
+        feedback.style.bottom = '80px';
+        feedback.style.left = '50%';
+        feedback.style.transform = 'translateX(-50%)';
+        feedback.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        feedback.style.color = 'white';
+        feedback.style.padding = '8px 12px';
+        feedback.style.borderRadius = '4px';
+        feedback.style.zIndex = '10000';
+        feedback.style.maxWidth = '80%';
+        feedback.style.textOverflow = 'ellipsis';
+        feedback.style.overflow = 'hidden';
+        feedback.style.whiteSpace = 'nowrap';
         
-        document.body.appendChild(debugInfo);
+        const previewText = text.length > 40 ? text.substring(0, 37) + '...' : text;
+        feedback.textContent = `已复制: ${previewText}`;
+        
+        document.body.appendChild(feedback);
         
         setTimeout(() => {
-            document.body.removeChild(debugInfo);
-        }, 2000);
+            document.body.removeChild(feedback);
+        }, 1500);
     }
 })();
