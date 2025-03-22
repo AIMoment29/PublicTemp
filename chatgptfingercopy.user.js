@@ -55,6 +55,9 @@
             if (paragraphElement) {
                 // 获取整个p标签的文本内容
                 const text = paragraphElement.textContent.trim();
+
+                // 弹出文本内容
+                alert('滑动元素文本内容：\n' + text);
                 
                 // 找到ChatGPT输入框
                 const chatInput = document.querySelector('textarea[data-id="root"]');
