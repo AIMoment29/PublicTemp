@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.10
+// @version      1.11
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
-// @description  检测横向滑动并将文本填入ChatGPT输入框
+// @description  检测横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出
 // @author       xiniu
 // @match        https://chatgpt.com/*
 // @grant        none
@@ -84,6 +84,9 @@
                 
                 // 使用document.execCommand插入文本
                 document.execCommand('insertText', false, textWithNewline);
+                
+                // 取消编辑器焦点，防止输入法弹出
+                removeEditorFocus();
                 return;
             } catch (e) {
                 console.error("execCommand方法失败:", e);
@@ -103,6 +106,9 @@
                 });
                 
                 editor.dispatchEvent(inputEvent);
+                
+                // 取消编辑器焦点，防止输入法弹出
+                removeEditorFocus();
                 return;
             } catch (e) {
                 console.error("InputEvent方法失败:", e);
@@ -123,14 +129,8 @@
                 // 插入文本
                 range.insertNode(textNode);
                 
-                // 移动光标到文本后
-                // range.setStartAfter(textNode);
-                // range.setEndAfter(textNode);
-                // selection.removeAllRanges();
-                // selection.addRange(range);
-                
-                // // 触发input事件
-                // editor.dispatchEvent(new Event('input', { bubbles: true }));
+                // 取消编辑器焦点，防止输入法弹出
+                removeEditorFocus();
                 return;
             } catch (e) {
                 console.error("直接DOM操作方法失败:", e);
@@ -173,6 +173,40 @@
             selection.addRange(range);
         } catch (e) {
             console.error("移动光标到末尾失败:", e);
+        }
+    }
+    
+    // 移除编辑器焦点，防止输入法弹出
+    function removeEditorFocus() {
+        try {
+            // 延时略微延后取消焦点，确保文本已插入
+            setTimeout(() => {
+                // 创建一个隐形的按钮元素
+                const dummyElement = document.createElement('button');
+                dummyElement.style.position = 'absolute';
+                dummyElement.style.left = '-9999px';
+                dummyElement.style.top = '-9999px';
+                dummyElement.style.opacity = '0';
+                dummyElement.tabIndex = -1;
+                
+                // 添加到文档
+                document.body.appendChild(dummyElement);
+                
+                // 聚焦到这个不可见元素
+                dummyElement.focus();
+                
+                // 清除选择
+                if (window.getSelection) {
+                    window.getSelection().removeAllRanges();
+                }
+                
+                // 移除这个临时元素
+                setTimeout(() => {
+                    document.body.removeChild(dummyElement);
+                }, 100);
+            }, 50);
+        } catch (e) {
+            console.error("移除焦点失败:", e);
         }
     }
     
