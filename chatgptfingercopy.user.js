@@ -60,7 +60,7 @@
                 alert('滑动元素文本内容：\n' + text);
                 
                 // 找到ChatGPT输入框
-                const chatInput = document.querySelector('textarea[data-id="root"]');
+                const chatInput = document.querySelector('textarea[data-virtualkeyboard="true"]');
                 if (chatInput && text) {
                     // 获取当前输入框内容
                     const currentText = chatInput.value;
