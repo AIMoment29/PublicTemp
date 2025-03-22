@@ -5,7 +5,7 @@
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
 // @description  识别横向滑动手势并将整个p标签内容复制到ChatGPT输入框
 // @author       xiniu
-// @match        https://chat.com/*
+// @match        https://chatgpt.com/*
 // @grant        none
 // ==/UserScript==
 
