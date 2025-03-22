@@ -124,13 +124,13 @@
                 range.insertNode(textNode);
                 
                 // 移动光标到文本后
-                range.setStartAfter(textNode);
-                range.setEndAfter(textNode);
-                selection.removeAllRanges();
-                selection.addRange(range);
+                // range.setStartAfter(textNode);
+                // range.setEndAfter(textNode);
+                // selection.removeAllRanges();
+                // selection.addRange(range);
                 
-                // 触发input事件
-                editor.dispatchEvent(new Event('input', { bubbles: true }));
+                // // 触发input事件
+                // editor.dispatchEvent(new Event('input', { bubbles: true }));
                 return;
             } catch (e) {
                 console.error("直接DOM操作方法失败:", e);
