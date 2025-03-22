@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         ChatGPT Simple Swipe Copy
+// @name         ChatGPT Swipe Alert
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
-// @description  识别横向滑动手势并将整个p标签内容复制到ChatGPT输入框
+// @description  检测横向滑动并弹出元素的文本内容
 // @author       xiniu
 // @match        https://chatgpt.com/*
 // @grant        none
@@ -14,9 +14,9 @@
     
     // 滑动检测配置
     const config = {
-        minSwipeDistance: 40,    // 最小横向滑动距离（像素）
-        maxSwipeTime: 1000,      // 最大滑动时间（毫秒）
-        directionThreshold: 1.2  // 横向滑动判定阈值
+        minSwipeDistance: 40,     // 最小横向滑动距离（像素）
+        maxSwipeTime: 1000,       // 最大滑动时间（毫秒）
+        directionThreshold: 1.2   // 横向滑动判定阈值（水平/垂直距离比率）
     };
     
     // 初始化触摸变量
@@ -56,22 +56,11 @@
                 // 获取整个p标签的文本内容
                 const text = paragraphElement.textContent.trim();
                 
-                // 找到ChatGPT输入框
-                const chatInput = document.querySelector('textarea[data-id="root"]');
-                if (chatInput && text) {
-                    // 将文本填入输入框
-                    chatInput.value = text;
-                    
-                    // 触发输入事件
-                    const inputEvent = new Event('input', { bubbles: true });
-                    chatInput.dispatchEvent(inputEvent);
-                    
-                    // 聚焦到输入框
-                    chatInput.focus();
-                    
-                    // 显示反馈
-                    showFeedback(text);
-                }
+                // 弹出文本内容
+                alert('滑动元素文本内容：\n' + text);
+                
+                // 显示滑动距离
+                console.log(`检测到横向滑动: ${distanceX}px，垂直距离: ${distanceY}px，时间: ${elapsedTime}ms`);
             }
         }
     }, false);
@@ -112,30 +101,23 @@
         return element;
     }
     
-    // 显示反馈提示
-    function showFeedback(text) {
-        const feedback = document.createElement('div');
-        feedback.style.position = 'fixed';
-        feedback.style.bottom = '80px';
-        feedback.style.left = '50%';
-        feedback.style.transform = 'translateX(-50%)';
-        feedback.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        feedback.style.color = 'white';
-        feedback.style.padding = '8px 12px';
-        feedback.style.borderRadius = '4px';
-        feedback.style.zIndex = '10000';
-        feedback.style.maxWidth = '80%';
-        feedback.style.textOverflow = 'ellipsis';
-        feedback.style.overflow = 'hidden';
-        feedback.style.whiteSpace = 'nowrap';
+    // 添加调试显示
+    function showDebugInfo(message) {
+        const debugInfo = document.createElement('div');
+        debugInfo.style.position = 'fixed';
+        debugInfo.style.bottom = '10px';
+        debugInfo.style.left = '10px';
+        debugInfo.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        debugInfo.style.color = 'white';
+        debugInfo.style.padding = '5px';
+        debugInfo.style.borderRadius = '3px';
+        debugInfo.style.zIndex = '10000';
+        debugInfo.textContent = message;
         
-        const previewText = text.length > 40 ? text.substring(0, 37) + '...' : text;
-        feedback.textContent = `已复制: ${previewText}`;
-        
-        document.body.appendChild(feedback);
+        document.body.appendChild(debugInfo);
         
         setTimeout(() => {
-            document.body.removeChild(feedback);
-        }, 1500);
+            document.body.removeChild(debugInfo);
+        }, 2000);
     }
 })();
