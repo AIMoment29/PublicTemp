@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.16
+// @version      1.17
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
 // @description  检测从左向右的单指横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出，防止重复输入，显示成功方法
 // @author       xiniu
@@ -157,7 +157,6 @@
                 const result = document.execCommand('insertText', false, textWithNewline);
                 
                 if (result) {
-                    alert('方法1成功: execCommand插入文本');
                     // 取消编辑器焦点，防止输入法弹出
                     // removeEditorFocus();
                     return;
@@ -165,70 +164,10 @@
             } catch (e) {
                 console.error("execCommand方法失败:", e);
             }
-            
-            // 方法2: 如果execCommand失败，尝试模拟键盘输入
-            try {
-                // 确保光标在编辑器末尾
-                moveCursorToEnd(editor);
-                
-                // 创建并分发input事件
-                const inputEvent = new InputEvent('input', {
-                    bubbles: true,
-                    cancelable: true,
-                    inputType: 'insertText',
-                    data: text + '\n'
-                });
-                
-                editor.dispatchEvent(inputEvent);
-                
-                // 检查内容是否已添加（简单检查编辑器内容是否包含文本）
-                if (editor.textContent.includes(text)) {
-                    alert('方法2成功: InputEvent模拟输入');
-                    // 取消编辑器焦点，防止输入法弹出
-                    // removeEditorFocus();
-                    return;
-                }
-            } catch (e) {
-                console.error("InputEvent方法失败:", e);
-            }
-            
-            // 方法3: 如果上面方法都失败，尝试直接追加文本节点
-            try {
-                // 确保光标在编辑器末尾
-                moveCursorToEnd(editor);
-                
-                // 获取插入前的内容长度
-                const beforeLength = editor.textContent.length;
-                
-                // 创建文本节点
-                const textNode = document.createTextNode(text + '\n');
-                
-                // 获取当前选择
-                const selection = window.getSelection();
-                const range = selection.getRangeAt(0);
-                
-                // 插入文本
-                range.insertNode(textNode);
-                
-                // 获取插入后的内容长度
-                const afterLength = editor.textContent.length;
-                
-                if (afterLength > beforeLength) {
-                    alert('方法3成功: 直接DOM操作插入文本');
-                    // 取消编辑器焦点，防止输入法弹出
-                    // removeEditorFocus();
-                    return;
-                }
-            } catch (e) {
-                console.error("直接DOM操作方法失败:", e);
-            }
-            
-            // 如果所有方法都失败
-            alert('所有插入方法都失败了');
+
         } else {
             // 如果找不到编辑器，输出错误日志
             console.error("找不到ChatGPT编辑器组件，请更新选择器");
-            alert('找不到ChatGPT编辑器组件');
         }
     }
     
