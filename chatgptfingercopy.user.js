@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.12
+// @version      1.13
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
 // @description  检测从左向右的单指横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出
 // @author       xiniu
@@ -26,12 +26,17 @@
     let touchStartY = 0;
     let touchStartTime = 0;
     let touchElement = null;
+    let isSingleFingerTouch = false; // 标记是否是单指触摸开始的
     
     // 监听触摸开始事件
     document.addEventListener('touchstart', function(event) {
         // 检查是否只有一根手指触摸
-        if (config.singleFingerOnly && event.touches.length !== 1) {
-            return;
+        if (config.singleFingerOnly) {
+            if (event.touches.length !== 1) {
+                isSingleFingerTouch = false;
+                return;
+            }
+            isSingleFingerTouch = true;
         }
         
         touchStartX = event.touches[0].clientX;
@@ -40,10 +45,26 @@
         touchElement = document.elementFromPoint(touchStartX, touchStartY);
     }, false);
     
+    // 监听触摸过程中的事件，检测是否变成了多指触摸
+    document.addEventListener('touchmove', function(event) {
+        if (config.singleFingerOnly && isSingleFingerTouch) {
+            // 如果在移动过程中变成了多指触摸，取消这次滑动
+            if (event.touches.length > 1) {
+                isSingleFingerTouch = false;
+            }
+        }
+    }, false);
+    
     // 监听触摸结束事件
     document.addEventListener('touchend', function(event) {
+        // 如果要求单指操作但不是单指触摸开始的，直接返回
+        if (config.singleFingerOnly && !isSingleFingerTouch) {
+            return;
+        }
+        
         // 检查是否只有一根手指触摸结束
-        if (config.singleFingerOnly && event.changedTouches.length !== 1) {
+        if (config.singleFingerOnly && event.touches.length > 0) {
+            // 如果还有其他手指在屏幕上，说明是多指操作
             return;
         }
         
@@ -78,9 +99,17 @@
                 insertTextToChatGPT(text);
                 
                 // 在控制台显示调试信息
-                console.log(`检测到有效滑动，方向: ${distanceX > 0 ? '从左向右' : '从右向左'}，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                console.log(`检测到有效滑动，方向: ${distanceX > 0 ? '从左向右' : '从右向左'}，手指数: 单指，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
             }
         }
+        
+        // 重置单指触摸标记
+        isSingleFingerTouch = false;
+    }, false);
+    
+    // 添加touchcancel事件处理，重置状态
+    document.addEventListener('touchcancel', function() {
+        isSingleFingerTouch = false;
     }, false);
     
     // 将文本插入到ChatGPT编辑器
