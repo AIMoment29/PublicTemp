@@ -157,7 +157,7 @@
                 document.execCommand('insertText', false, textWithNewline);
                 
                 // 取消编辑器焦点，防止输入法弹出
-                removeEditorFocus();
+                // removeEditorFocus();
                 return;
             } catch (e) {
                 console.error("execCommand方法失败:", e);
