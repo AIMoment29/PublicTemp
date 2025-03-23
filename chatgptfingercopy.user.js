@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.11
+// @version      1.12
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
-// @description  检测横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出
+// @description  检测从左向右的单指横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出
 // @author       xiniu
 // @match        https://chatgpt.com/*
 // @grant        none
@@ -16,7 +16,9 @@
     const config = {
         minSwipeDistance: 40,     // 最小横向滑动距离（像素）
         maxSwipeTime: 1000,       // 最大滑动时间（毫秒）
-        directionThreshold: 1.2   // 横向滑动判定阈值（水平/垂直距离比率）
+        directionThreshold: 1.2,  // 横向滑动判定阈值（水平/垂直距离比率）
+        requireRightDirection: true, // 是否要求只有从左向右滑动有效
+        singleFingerOnly: true    // 是否只接受单指滑动
     };
     
     // 初始化触摸变量
@@ -27,6 +29,11 @@
     
     // 监听触摸开始事件
     document.addEventListener('touchstart', function(event) {
+        // 检查是否只有一根手指触摸
+        if (config.singleFingerOnly && event.touches.length !== 1) {
+            return;
+        }
+        
         touchStartX = event.touches[0].clientX;
         touchStartY = event.touches[0].clientY;
         touchStartTime = new Date().getTime();
@@ -35,18 +42,29 @@
     
     // 监听触摸结束事件
     document.addEventListener('touchend', function(event) {
+        // 检查是否只有一根手指触摸结束
+        if (config.singleFingerOnly && event.changedTouches.length !== 1) {
+            return;
+        }
+        
         const touchEndX = event.changedTouches[0].clientX;
         const touchEndY = event.changedTouches[0].clientY;
         const touchEndTime = new Date().getTime();
         
         // 计算滑动距离和时间
-        const distanceX = Math.abs(touchEndX - touchStartX);
+        const distanceX = touchEndX - touchStartX; // 不取绝对值，保留方向信息
         const distanceY = Math.abs(touchEndY - touchStartY);
         const elapsedTime = touchEndTime - touchStartTime;
         
+        // 检查方向 - 如果启用了方向限制，检查是否是从左向右滑动
+        const isRightDirection = !config.requireRightDirection || distanceX > 0;
+        
         // 判断是否为有效的横向滑动
-        const isHorizontalSwipe = distanceX > distanceY * config.directionThreshold;
-        const isValidSwipe = isHorizontalSwipe && distanceX > config.minSwipeDistance && elapsedTime < config.maxSwipeTime;
+        const isHorizontalSwipe = Math.abs(distanceX) > distanceY * config.directionThreshold;
+        const isValidSwipe = isHorizontalSwipe && 
+                            Math.abs(distanceX) > config.minSwipeDistance && 
+                            elapsedTime < config.maxSwipeTime &&
+                            isRightDirection;
         
         if (isValidSwipe && touchElement) {
             // 查找包含触摸元素的 p 标签
@@ -60,7 +78,7 @@
                 insertTextToChatGPT(text);
                 
                 // 在控制台显示调试信息
-                console.log(`检测到有效滑动，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                console.log(`检测到有效滑动，方向: ${distanceX > 0 ? '从左向右' : '从右向左'}，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
             }
         }
     }, false);
