@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.13
+// @version      1.14
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
-// @description  检测从左向右的单指横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出
+// @description  检测从左向右的单指横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出，防止重复输入
 // @author       xiniu
 // @match        https://chatgpt.com/*
 // @grant        none
@@ -20,6 +20,9 @@
         requireRightDirection: true, // 是否要求只有从左向右滑动有效
         singleFingerOnly: true    // 是否只接受单指滑动
     };
+    
+    // 用于记录已输入的文本，防止重复输入
+    let recentInputs = new Set();
     
     // 初始化触摸变量
     let touchStartX = 0;
@@ -95,11 +98,19 @@
                 // 获取整个p标签的文本内容
                 const text = paragraphElement.textContent.trim();
                 
-                // 输入文本到ChatGPT编辑器
-                insertTextToChatGPT(text);
-                
-                // 在控制台显示调试信息
-                console.log(`检测到有效滑动，方向: ${distanceX > 0 ? '从左向右' : '从右向左'}，手指数: 单指，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                // 检查是否已经输入过这段文本
+                if (!recentInputs.has(text)) {
+                    // 输入文本到ChatGPT编辑器
+                    insertTextToChatGPT(text);
+                    
+                    // 记录这段文本已被输入
+                    recentInputs.add(text);
+                    
+                    // 在控制台显示调试信息
+                    console.log(`检测到有效滑动，方向: ${distanceX > 0 ? '从左向右' : '从右向左'}，手指数: 单指，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                } else {
+                    console.log(`跳过重复文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                }
             }
         }
         
@@ -111,6 +122,19 @@
     document.addEventListener('touchcancel', function() {
         isSingleFingerTouch = false;
     }, false);
+    
+    // 监听输入框变化，检测清空情况
+    function checkInputFieldEmpty() {
+        const editor = document.querySelector('[contenteditable="true"].ProseMirror');
+        if (editor && editor.textContent.trim() === '') {
+            // 如果输入框是空的，清空记录的输入，允许重新添加相同文本
+            recentInputs.clear();
+            console.log('输入框已清空，重置文本记录');
+        }
+    }
+    
+    // 定期检查输入框是否为空
+    setInterval(checkInputFieldEmpty, 1000);
     
     // 将文本插入到ChatGPT编辑器
     function insertTextToChatGPT(text) {
@@ -292,4 +316,16 @@
         // 如果实在找不到p标签，返回原始元素
         return element;
     }
+    
+    // 监听输入框提交事件，清空记录的输入
+    document.addEventListener('click', function(event) {
+        // 检查是否点击了发送按钮
+        if (event.target.closest('button[data-testid="send-button"]')) {
+            // 点击发送按钮后，清空记录的输入
+            setTimeout(() => {
+                recentInputs.clear();
+                console.log('消息已发送，重置文本记录');
+            }, 500); // 等待500毫秒，确保消息已发送
+        }
+    }, false);
 })();
