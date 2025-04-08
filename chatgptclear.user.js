@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Clear Button
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.2
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptclear.user.js
 // @description  在ChatGPT页面添加一个简洁的清空按钮
 // @author       xiniu
@@ -69,6 +69,9 @@
     function clearChatGPTEditor() {
         const editor = document.querySelector('[contenteditable="true"].ProseMirror');
         if (editor) {
+            // 记住激活状态
+            const wasActive = document.activeElement === editor;
+            
             // 聚焦编辑器
             editor.focus();
             
@@ -81,6 +84,27 @@
             
             // 删除所有内容
             document.execCommand('delete', false, null);
+            
+            // 移除光标聚焦
+            if (!wasActive) {
+                // 创建一个临时元素来接收焦点
+                const temp = document.createElement('button');
+                temp.style.position = 'fixed';
+                temp.style.left = '-9999px';
+                temp.style.top = '-9999px';
+                document.body.appendChild(temp);
+                
+                // 移动焦点到临时元素
+                temp.focus();
+                
+                // 清除选择
+                selection.removeAllRanges();
+                
+                // 移除临时元素
+                setTimeout(() => {
+                    document.body.removeChild(temp);
+                }, 100);
+            }
         }
     }
     
