@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         x-button-adder
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @updateURL    https://aimoment29.github.io/PublicTemp/xbutton.user.js
 // @description  为 X/Twitter 添加自定义按钮
 // @match        https://x.com/*
 // @match        https://twitter.com/*
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
-// @connect      127.0.0.1
+// @connect aimoment.defg.uk
 // ==/UserScript==
 
 // 添加提示样式
@@ -98,7 +98,7 @@ function sendTweetInfo(tweet, type) {
             }
         },
         onerror: function(error) {
-            showAlert('收集失败：请检查接口是否正常', false);
+            showAlert('收集失败：' + (error.statusText || '请检查接口是否正常'), false);
         }
     });
 }
