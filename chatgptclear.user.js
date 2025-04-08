@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Clear Button
 // @namespace    http://tampermonkey.net/
-// @version      1.9
+// @version      2.0
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptclear.user.js
 // @description  在ChatGPT页面添加一个简洁的清空按钮
 // @author       xiniu
@@ -21,7 +21,8 @@
         buttonPosition: {          // 浮动按钮位置
             top: '80px',
             right: '20px'
-        }
+        },
+        opacity: 0.3              // 按钮透明度 (30%)
     };
     
     // 添加永久可见的浮动按钮
@@ -36,7 +37,7 @@
         floatingButton.id = 'chatgpt-clear-button-floating';
         floatingButton.textContent = 'clear';
         
-        // 设置按钮样式 - 简洁的圆形按钮，黑字白底黑框
+        // 设置按钮样式 - 简洁的圆形按钮，黑字白底黑框，30%透明度
         Object.assign(floatingButton.style, {
             position: 'fixed',
             top: config.buttonPosition.top,
@@ -57,7 +58,8 @@
             textAlign: 'center',
             lineHeight: '40px',     // 垂直居中文本
             pointerEvents: 'auto',  // 确保可点击
-            userSelect: 'none'      // 防止选中文本
+            userSelect: 'none',     // 防止选中文本
+            opacity: config.opacity.toString() // 设置透明度为30%
         });
         
         // 添加点击事件
@@ -79,6 +81,7 @@
         } else {
             // 确保按钮在最上层
             button.style.zIndex = config.zIndex.toString();
+            button.style.opacity = config.opacity.toString();
         }
     }
     
@@ -131,6 +134,7 @@
                 line-height: 40px;
                 pointer-events: auto;
                 user-select: none;
+                opacity: ${config.opacity};
             }
         `;
         
