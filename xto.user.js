@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         x-to-expander
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.2
 // @updateURL    https://aimoment29.github.io/PublicTemp/xto.user.js
 // @description  将 X/Twitter 的 t.co 短链接替换为原始链接
 // @match        https://x.com/*
 // @match        https://twitter.com/*
 // @grant        GM_xmlhttpRequest
 // @run-at       document-idle
+// @connect t.co
+// @connect *
 // ==/UserScript==
 
 // 用于存储已处理过的链接
