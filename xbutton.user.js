@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         x-button-adder
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @updateURL    https://aimoment29.github.io/PublicTemp/xbutton.user.js
 // @description  为 X/Twitter 添加自定义按钮
 // @match        https://x.com/*
 // @match        https://twitter.com/*
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
-// @connect aimoment.defg.uk
+// @connect x.defg.uk
 // ==/UserScript==
 
 // 添加提示样式
@@ -80,7 +80,7 @@ function sendTweetInfo(tweet, type) {
     // 使用 GM_xmlhttpRequest 发送数据
     GM_xmlhttpRequest({
         method: 'POST',
-        url: 'https://aimoment.defg.uk/lark/add',
+        url: 'https://x.defg.uk/lark/add',
         headers: {
             'Content-Type': 'application/json'
         },
