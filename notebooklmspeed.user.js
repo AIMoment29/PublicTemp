@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         notebooklm-speed
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @updateURL    https://aimoment29.github.io/PublicTemp/notebooklmspeed.user.js
 // @description  自动设置notebooklm的播放速度为1.8倍速
 // @match        https://notebooklm.google.com/*
@@ -13,44 +13,58 @@
     const targetSpeed = 1.8;
     // 执行状态标志 - 确保只执行一次
     let hasExecuted = false;
+    // 标记当前是否正在进行设置操作
+    let isSettingSpeed = false;
     
-    // 更精确地检测more_vert图标
-    function findMoreVertIcon() {
-      // 使用更严格的选择器，确保只匹配播放控制相关的more_vert图标
+    // 更精确地检测播放控件的菜单图标，支持多语言
+    function findPlaybackMenuIcon() {
+      // 使用更宽泛的选择器，不再依赖于固定的"more_vert"文本
       const allMatIcons = document.querySelectorAll('mat-icon.google-symbols');
       
-      // 从所有mat-icon中筛选出确实包含more_vert文本的图标
-      const moreIcons = Array.from(allMatIcons).filter(icon => {
-        return icon.textContent && 
-               icon.textContent.trim() === 'more_vert' &&
-               // 确保位于播放控件区域，不是页面其他区域的菜单
-               (icon.closest('.audio-controls') || 
-                icon.closest('.player-controls') || 
-                icon.closest('.playback-controls') ||
-                // 查找可能在附近的播放或音频相关元素
-                icon.closest('div')?.querySelector('audio') ||
-                icon.closest('[aria-label*="playback"]') ||
-                icon.closest('[aria-label*="audio"]'));
+      // 从所有mat-icon中筛选出可能是播放控件菜单的图标
+      const menuIcons = Array.from(allMatIcons).filter(icon => {
+        // 检查是否是竖排三点菜单图标（more_vert）或其他语言版本的同类图标
+        const isMenuIcon = icon.textContent && 
+                         (icon.textContent.trim() === 'more_vert' ||
+                          icon.textContent.trim() === '更多' ||
+                          icon.textContent.trim() === '菜单' ||
+                          icon.textContent.trim() === 'menu' ||
+                          icon.textContent.trim().includes('vert'));
+        
+        // 确保位于播放控件区域，不是页面其他区域的菜单
+        const isInPlayerControls = icon.closest('.audio-controls') || 
+                                icon.closest('.player-controls') || 
+                                icon.closest('.playback-controls') ||
+                                // 查找可能在附近的播放或音频相关元素
+                                icon.closest('div')?.querySelector('audio') ||
+                                icon.closest('[aria-label*="playback"]') ||
+                                icon.closest('[aria-label*="audio"]') ||
+                                icon.closest('[aria-label*="播放"]') ||
+                                icon.closest('[aria-label*="音频"]');
+                                
+        return isMenuIcon && isInPlayerControls;
       });
       
-      return moreIcons.length > 0 ? moreIcons[0] : null;
+      return menuIcons.length > 0 ? menuIcons[0] : null;
     }
     
     // 设置播放速度的完整流程
     function setSpeedTo18x() {
-      if (hasExecuted) return; // 如果已执行过，不再执行
+      // 如果已执行成功，或者当前正在进行设置操作，则不再执行
+      if (hasExecuted || isSettingSpeed) return;
       
-      // 寻找正确的more_vert图标
-      const moreIcon = findMoreVertIcon();
+      // 寻找播放控件的菜单图标
+      const menuIcon = findPlaybackMenuIcon();
       
-      if (!moreIcon) {
-        console.log('未找到播放控件相关的more_vert图标，操作终止');
+      if (!menuIcon) {
+        console.log('未找到播放控件相关的菜单图标，继续监控...');
         return;
       }
       
-      console.log('找到播放控件的more_vert图标，点击中...');
-      hasExecuted = true; // 标记为已执行
-      moreIcon.click();
+      console.log('找到播放控件的菜单图标，点击中...');
+      // 标记正在进行设置，避免重复操作
+      isSettingSpeed = true;
+      menuIcon.click();
       
       // 步骤2: 等待菜单出现，然后查找速度选项
       setTimeout(() => {
@@ -58,22 +72,25 @@
         const menuItems = document.querySelectorAll('.mat-mdc-menu-content .mat-mdc-menu-item');
         
         if (menuItems.length === 0) {
-          console.log('未找到菜单项，可能菜单未打开，操作终止');
+          console.log('未找到菜单项，可能菜单未打开，重置状态继续监控...');
+          isSettingSpeed = false; // 重置设置中状态，允许下次尝试
           return;
         }
         
         console.log(`找到${menuItems.length}个菜单项`);
         
-        // 查找包含"速度"或"Speed"的菜单项
+        // 查找包含"速度"、"Speed"或数字+x的菜单项，支持多语言
         const speedMenuItem = Array.from(menuItems).find(item => {
           const text = item.textContent || '';
           return text.toLowerCase().includes('速度') || 
                  text.toLowerCase().includes('speed') ||
+                 text.toLowerCase().includes('playback') ||
                  text.match(/\d\.?\d*x/); // 匹配如 1.0x 这样的格式
         });
         
         if (!speedMenuItem) {
-          console.log('未找到速度菜单项，操作终止');
+          console.log('未找到速度菜单项，重置状态继续监控...');
+          isSettingSpeed = false; // 重置设置中状态，允许下次尝试
           return;
         }
         
@@ -87,7 +104,8 @@
           const latestPanel = speedPanels[speedPanels.length - 1]; // 最后打开的菜单面板
           
           if (!latestPanel) {
-            console.log('未找到速度子菜单面板，操作终止');
+            console.log('未找到速度子菜单面板，重置状态继续监控...');
+            isSettingSpeed = false; // 重置设置中状态，允许下次尝试
             return;
           }
           
@@ -95,7 +113,8 @@
           console.log(`找到${speedOptions.length}个速度选项`);
           
           if (speedOptions.length === 0) {
-            console.log('未找到速度选项，操作终止');
+            console.log('未找到速度选项，重置状态继续监控...');
+            isSettingSpeed = false; // 重置设置中状态，允许下次尝试
             return;
           }
           
@@ -108,8 +127,11 @@
             console.log('找到1.8x选项，点击中...');
             option18x.click();
             console.log('已成功设置1.8x播放速度');
+            // 只有在成功点击1.8x选项后才设置hasExecuted为true
+            hasExecuted = true;
           } else {
-            console.log('未找到1.8x选项，操作终止');
+            console.log('未找到1.8x选项，重置状态继续监控...');
+            isSettingSpeed = false; // 重置设置中状态，允许下次尝试
           }
         }, 500);
       }, 500);
@@ -124,16 +146,19 @@
           return;
         }
         
-        // 检查是否有播放控件相关的more_vert图标
-        const moreIcon = findMoreVertIcon();
+        // 检查是否有播放控件相关的菜单图标
+        const menuIcon = findPlaybackMenuIcon();
         
-        if (moreIcon) {
-          console.log('检测到播放控件及more_vert图标，准备设置1.8倍速...');
+        if (menuIcon) {
+          console.log('检测到播放控件及菜单图标，准备设置1.8倍速...');
           // 等待界面稳定后执行
           setTimeout(() => {
             setSpeedTo18x();
-            // 执行完成后断开观察器
-            observer.disconnect();
+            // 只有当hasExecuted为true时（表示成功设置）才断开观察器
+            if (hasExecuted) {
+              observer.disconnect();
+              console.log('成功设置倍速，停止监控');
+            }
           }, 1000);
         }
       });
@@ -145,27 +170,29 @@
         attributes: true
       });
       
-      console.log('已设置对播放控件的监控');
+      console.log('已设置对播放控件的监控，将持续监控直到成功设置1.8倍速');
       
-      // 设置安全停止机制，30秒后如果还未执行则停止监控
-      setTimeout(() => {
-        if (!hasExecuted) {
-          console.log('30秒超时，未检测到播放控件，停止监控');
-          observer.disconnect();
-        }
-      }, 30000);
+      // 移除30秒超时限制
     }
     
     // 初始检查
-    const initialIcon = findMoreVertIcon();
+    const initialIcon = findPlaybackMenuIcon();
     if (initialIcon) {
       console.log('页面加载后立即找到播放控件，准备设置1.8倍速...');
       // 等待界面稳定
       setTimeout(setSpeedTo18x, 1000);
+      
+      // 如果初始尝试失败，开始持续监控
+      setTimeout(() => {
+        if (!hasExecuted) {
+          console.log('初始尝试未成功，开始持续监控...');
+          watchForControls();
+        }
+      }, 3000); // 给初始尝试3秒时间
     } else {
       console.log('页面加载后未找到播放控件，开始监控...');
       watchForControls();
     }
     
-    console.log('1.8倍速自动设置脚本已启动');
+    console.log('1.8倍速自动设置脚本已启动（持续监控模式）');
   })();
