@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.17
+// @version      1.18
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
 // @description  检测从左向右的单指横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出，防止重复输入，显示成功方法
 // @author       xiniu
@@ -91,25 +91,47 @@
                             isRightDirection;
         
         if (isValidSwipe && touchElement) {
-            // 查找包含触摸元素的 p 标签
-            const paragraphElement = findParentParagraph(touchElement);
-            
-            if (paragraphElement) {
-                // 获取整个p标签的文本内容
-                const text = paragraphElement.textContent.trim();
+            // 检查是否在表格单元格内
+            const tableCell = findTableCell(touchElement);
+            if (tableCell) {
+                // 如果是表格单元格，只获取单元格文本
+                const cellText = tableCell.textContent.trim();
                 
                 // 检查是否已经输入过这段文本
-                if (!recentInputs.has(text)) {
+                if (!recentInputs.has(cellText) && cellText) {
                     // 输入文本到ChatGPT编辑器
-                    insertTextToChatGPT(text);
+                    insertTextToChatGPT(cellText);
                     
                     // 记录这段文本已被输入
-                    recentInputs.add(text);
+                    recentInputs.add(cellText);
                     
                     // 在控制台显示调试信息
-                    console.log(`检测到有效滑动，方向: ${distanceX > 0 ? '从左向右' : '从右向左'}，手指数: 单指，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
-                } else {
-                    console.log(`跳过重复文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                    console.log(`检测到表格单元格滑动，文本: ${cellText.substring(0, 50)}${cellText.length > 50 ? '...' : ''}`);
+                } else if (cellText) {
+                    console.log(`跳过重复表格单元格文本: ${cellText.substring(0, 50)}${cellText.length > 50 ? '...' : ''}`);
+                }
+            } else {
+                // 不是表格单元格，使用原来的逻辑
+                // 查找包含触摸元素的 p 标签
+                const paragraphElement = findParentParagraph(touchElement);
+                
+                if (paragraphElement) {
+                    // 获取整个p标签的文本内容
+                    const text = paragraphElement.textContent.trim();
+                    
+                    // 检查是否已经输入过这段文本
+                    if (!recentInputs.has(text) && text) {
+                        // 输入文本到ChatGPT编辑器
+                        insertTextToChatGPT(text);
+                        
+                        // 记录这段文本已被输入
+                        recentInputs.add(text);
+                        
+                        // 在控制台显示调试信息
+                        console.log(`检测到有效滑动，方向: ${distanceX > 0 ? '从左向右' : '从右向左'}，手指数: 单指，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                    } else if (text) {
+                        console.log(`跳过重复文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                    }
                 }
             }
         }
@@ -117,6 +139,25 @@
         // 重置单指触摸标记
         isSingleFingerTouch = false;
     }, false);
+    
+    // 查找表格单元格
+    function findTableCell(element) {
+        // 检查元素本身是否为td或th
+        if (element.tagName === 'TD' || element.tagName === 'TH') {
+            return element;
+        }
+        
+        // 向上查找最近的td或th
+        let current = element;
+        while (current && current !== document.body) {
+            if (current.tagName === 'TD' || current.tagName === 'TH') {
+                return current;
+            }
+            current = current.parentElement;
+        }
+        
+        return null; // 没有找到表格单元格
+    }
     
     // 添加touchcancel事件处理，重置状态
     document.addEventListener('touchcancel', function() {
