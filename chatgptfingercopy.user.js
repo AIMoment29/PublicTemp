@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Swipe to Input
 // @namespace    http://tampermonkey.net/
-// @version      1.18
+// @version      1.19
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js
 // @description  检测从左向右的单指横向滑动并将文本填入ChatGPT输入框，不触发输入法弹出，防止重复输入，显示成功方法
 // @author       xiniu
@@ -111,26 +111,46 @@
                     console.log(`跳过重复表格单元格文本: ${cellText.substring(0, 50)}${cellText.length > 50 ? '...' : ''}`);
                 }
             } else {
-                // 不是表格单元格，使用原来的逻辑
-                // 查找包含触摸元素的 p 标签
-                const paragraphElement = findParentParagraph(touchElement);
+                // 尝试获取滑动位置所在的单行文本
+                const lineText = getTextLineAtPosition(touchStartY, touchElement);
                 
-                if (paragraphElement) {
-                    // 获取整个p标签的文本内容
-                    const text = paragraphElement.textContent.trim();
-                    
+                if (lineText) {
+                    // 找到了滑动位置所在的文本行
                     // 检查是否已经输入过这段文本
-                    if (!recentInputs.has(text) && text) {
+                    if (!recentInputs.has(lineText)) {
                         // 输入文本到ChatGPT编辑器
-                        insertTextToChatGPT(text);
+                        insertTextToChatGPT(lineText);
                         
                         // 记录这段文本已被输入
-                        recentInputs.add(text);
+                        recentInputs.add(lineText);
                         
                         // 在控制台显示调试信息
-                        console.log(`检测到有效滑动，方向: ${distanceX > 0 ? '从左向右' : '从右向左'}，手指数: 单指，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
-                    } else if (text) {
-                        console.log(`跳过重复文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                        console.log(`检测到文本行滑动，文本: ${lineText.substring(0, 50)}${lineText.length > 50 ? '...' : ''}`);
+                    } else {
+                        console.log(`跳过重复文本行: ${lineText.substring(0, 50)}${lineText.length > 50 ? '...' : ''}`);
+                    }
+                } else {
+                    // 如果无法获取精确的行，回退到原来的段落逻辑
+                    // 查找包含触摸元素的 p 标签
+                    const paragraphElement = findParentParagraph(touchElement);
+                    
+                    if (paragraphElement) {
+                        // 获取整个p标签的文本内容
+                        const text = paragraphElement.textContent.trim();
+                        
+                        // 检查是否已经输入过这段文本
+                        if (!recentInputs.has(text) && text) {
+                            // 输入文本到ChatGPT编辑器
+                            insertTextToChatGPT(text);
+                            
+                            // 记录这段文本已被输入
+                            recentInputs.add(text);
+                            
+                            // 在控制台显示调试信息
+                            console.log(`检测到段落滑动，文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                        } else if (text) {
+                            console.log(`跳过重复段落文本: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                        }
                     }
                 }
             }
@@ -139,6 +159,149 @@
         // 重置单指触摸标记
         isSingleFingerTouch = false;
     }, false);
+    
+    // 获取指定垂直位置的单行文本
+    function getTextLineAtPosition(y, element) {
+        try {
+            // 首先尝试使用range和getClientRects方法获取文本行
+            const containingElement = findTextContainer(element);
+            if (!containingElement) return null;
+            
+            // 创建一个范围遍历容器中的所有文本节点
+            const textNodes = [];
+            const walker = document.createTreeWalker(
+                containingElement, 
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.textContent.trim()) {
+                    textNodes.push(node);
+                }
+            }
+            
+            // 如果没有找到文本节点，返回null
+            if (textNodes.length === 0) return null;
+            
+            // 遍历每个文本节点，尝试找到包含触摸位置的行
+            for (const textNode of textNodes) {
+                const range = document.createRange();
+                range.selectNodeContents(textNode);
+                
+                const rects = range.getClientRects();
+                for (let i = 0; i < rects.length; i++) {
+                    const rect = rects[i];
+                    // 如果触摸位置在这个矩形区域内（考虑垂直位置）
+                    if (y >= rect.top && y <= rect.bottom) {
+                        // 对于多行文本节点，我们需要确定是哪一行
+                        if (rects.length > 1) {
+                            // 创建一个临时容器来获取当前行的文本
+                            const tempDiv = document.createElement('div');
+                            tempDiv.style.position = 'absolute';
+                            tempDiv.style.visibility = 'hidden';
+                            tempDiv.style.width = `${rect.width}px`;
+                            tempDiv.style.height = `${rect.height}px`;
+                            tempDiv.style.whiteSpace = 'nowrap';
+                            tempDiv.textContent = textNode.textContent;
+                            document.body.appendChild(tempDiv);
+                            
+                            // 如果文本溢出了矩形宽度，逐字尝试找到适合这一行的文本
+                            let lineText = '';
+                            if (tempDiv.scrollWidth > rect.width) {
+                                // 按空格分割文本
+                                const words = textNode.textContent.split(/\s+/);
+                                let testText = '';
+                                
+                                for (const word of words) {
+                                    const testWithNewWord = testText + (testText ? ' ' : '') + word;
+                                    tempDiv.textContent = testWithNewWord;
+                                    
+                                    if (tempDiv.scrollWidth <= rect.width) {
+                                        testText = testWithNewWord;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                
+                                lineText = testText.trim() || textNode.textContent.trim();
+                            } else {
+                                lineText = textNode.textContent.trim();
+                            }
+                            
+                            document.body.removeChild(tempDiv);
+                            return lineText;
+                        } else {
+                            // 单行文本节点，直接返回所有文本
+                            return textNode.textContent.trim();
+                        }
+                    }
+                }
+            }
+            
+            // 如果以上方法失败，尝试简单的行高估算
+            const computedStyle = window.getComputedStyle(containingElement);
+            const lineHeight = parseInt(computedStyle.lineHeight) || parseInt(computedStyle.fontSize) * 1.2;
+            
+            // 计算点击位置在容器内的相对垂直位置
+            const containerRect = containingElement.getBoundingClientRect();
+            const relativeY = y - containerRect.top;
+            
+            // 估算点击的是第几行
+            const lineIndex = Math.floor(relativeY / lineHeight);
+            
+            // 获取容器的全部文本并按换行符分割
+            const allText = containingElement.textContent;
+            const lines = allText.split(/\n/);
+            
+            // 如果估算的行索引在范围内，返回对应行文本
+            if (lineIndex >= 0 && lineIndex < lines.length) {
+                return lines[lineIndex].trim();
+            }
+            
+            // 如果所有方法都失败，返回null
+            return null;
+        } catch (e) {
+            console.error('获取文本行失败:', e);
+            return null;
+        }
+    }
+    
+    // 查找包含文本的最近的容器元素
+    function findTextContainer(element) {
+        // 如果元素本身包含文本，返回它
+        if (element.textContent && element.textContent.trim()) {
+            return element;
+        }
+        
+        // 向上查找包含文本的父元素
+        let current = element;
+        while (current && current !== document.body) {
+            if (current.textContent && current.textContent.trim()) {
+                // 避免太大的容器，如果是大容器，查找更小的文本容器
+                if (current.tagName === 'DIV' || current.tagName === 'SPAN' || 
+                    current.tagName === 'P' || current.tagName === 'LI') {
+                    
+                    // 检查是否有更小的适合文本容器的子元素
+                    const children = Array.from(current.children);
+                    for (const child of children) {
+                        if (child.contains(element) && 
+                            child.textContent && 
+                            child.textContent.trim()) {
+                            return child;
+                        }
+                    }
+                    
+                    return current;
+                }
+            }
+            current = current.parentElement;
+        }
+        
+        return null;
+    }
     
     // 查找表格单元格
     function findTableCell(element) {
