@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Clear Button
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @updateURL    https://aimoment29.github.io/PublicTemp/chatgptclear.user.js
 // @description  在ChatGPT页面添加一个简洁的清空按钮
 // @author       xiniu
@@ -15,7 +15,8 @@
     
     // 简化的配置项
     const config = {
-        top: '80px',              // 按钮顶部位置
+        top: '80px',              // 按钮在桌面端的顶部位置
+        bottom: '80px',           // 按钮在移动端的底部位置
         right: '20px',            // 按钮右侧位置
         opacity: 0.3,             // 按钮透明度 (30%)
         zIndex: 2147483647        // 确保按钮在最上层
@@ -36,7 +37,6 @@
         // 设置样式 - 简洁的圆形按钮，黑字白底黑框，30%透明度
         Object.assign(button.style, {
             position: 'fixed',
-            top: config.top,
             right: config.right,
             width: '40px',
             height: '40px',
@@ -55,6 +55,20 @@
             opacity: config.opacity.toString(),
             userSelect: 'none'
         });
+
+        // 根据屏幕尺寸调整位置
+        function updateButtonPosition() {
+            if (window.innerWidth <= 768) { // 移动端或窄屏
+                button.style.top = 'auto';
+                button.style.bottom = config.bottom;
+            } else {
+                button.style.bottom = 'auto';
+                button.style.top = config.top;
+            }
+        }
+
+        updateButtonPosition();
+        window.addEventListener('resize', updateButtonPosition);
         
         // 添加点击事件
         button.addEventListener('click', function() {
