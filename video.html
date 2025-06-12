@@ -27942,11 +27942,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         // 检测是否为移动设备
         const isMobile = window.innerWidth < 992;
-        // 检测是否为iOS设备
+        // 检测是否为iOS设备或桌面设备（PC、Mac等）
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isDesktop = !(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
         
-        // 处理B站链接，在iOS上使用网页版链接
-        if (isIOS) {
+        // 处理B站链接，在iOS和桌面设备上使用网页版链接
+        if (isIOS || isDesktop) {
             document.querySelectorAll('.bili-link').forEach(function(link) {
                 const webUrl = link.getAttribute('data-web-url');
                 if (webUrl) {
