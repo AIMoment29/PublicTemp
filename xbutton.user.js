@@ -11,6 +11,22 @@
 // @connect x.defg.uk
 // ==/UserScript==
 
+/**
+ * 脚本功能说明：
+ *
+ * 1. 自定义按钮：
+ *    - 为每条推文的操作栏添加两个自定义图标按钮（圆形和方形）
+ *
+ * 2. 推文收集：
+ *    - 点击按钮可收集推文信息（URL、内容、时间、作者）
+ *    - 将收集的数据发送到外部服务器 (https://x.defg.uk/lark/add)
+ *    - 两个按钮分别发送 type1 和 type2 类型
+ *
+ * 3. 状态提示：
+ *    - 显示收集中/成功/失败的提示动画
+ *    - 提示框会自动消失
+ */
+
 // 添加提示样式
 const style = document.createElement('style');
 style.textContent = `

@@ -11,6 +11,22 @@
 // @run-at       document-idle
 // ==/UserScript==
 
+/**
+ * 脚本功能说明：
+ *
+ * 1. 删除推荐内容：
+ *    - 查找并隐藏包含 "Discover more"/"发现更多"/"更多发现" 文本的元素
+ *    - 同时隐藏该元素之后的所有推荐内容
+ *
+ * 2. 多语言支持：
+ *    - 支持英文 "Discover more"
+ *    - 支持中文 "发现更多" 和 "更多发现"
+ *
+ * 3. 动态监控：
+ *    - 使用 MutationObserver 监控 DOM 变化
+ *    - 每3秒定期清理，确保新加载的内容也被处理
+ */
+
 (function() {
     'use strict';
     

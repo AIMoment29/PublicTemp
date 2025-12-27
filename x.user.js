@@ -9,6 +9,20 @@
 // @grant        GM_addStyle
 // ==/UserScript==
 
+/**
+ * 脚本功能说明：
+ *
+ * 1. 标签页优化：
+ *    - 移除首页的前两个标签（"For you/为你推荐" 和 "Following/关注"）
+ *    - 首次打开时自动点击第三个标签页
+ *
+ * 2. 界面简化：
+ *    - 移除发帖按钮（Compose a post）
+ *
+ * 3. URL监听：
+ *    - 监听页面URL变化，当返回首页时重新处理标签页
+ */
+
 let firstOpen = true
 let hasProcessedTabs = false;
 
