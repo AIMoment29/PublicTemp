@@ -1,17 +1,20 @@
 // ==UserScript==
 // @name         x-button-adder
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.5
 // @updateURL    https://aimoment29.github.io/PublicTemp/xbutton.user.js
 // @description  为 X/Twitter 添加自定义按钮
 // @match        https://x.com/*
 // @match        https://twitter.com/*
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
-// @connect x.defg.uk
+// @connect xlarktask.defg.uk
 // ==/UserScript==
 
 /**
+ * 源文件在 twitter-lark/userscript/xbutton.user.js，PublicTemp 里的是发布副本，不要直接改；
+ * 改完提高 @version，再运行 twitter-lark/scripts/publish-userscript.sh 发布。
+ *
  * 脚本功能说明：
  *
  * 1. 自定义按钮：
@@ -19,7 +22,7 @@
  *
  * 2. 推文收集：
  *    - 点击按钮可收集推文信息（URL、内容、时间、作者）
- *    - 将收集的数据发送到外部服务器 (https://x.defg.uk/lark/add)
+ *    - 将收集的数据发送到外部服务器 (https://xlarktask.defg.uk/lark/add)
  *    - 两个按钮分别发送 type1 和 type2 类型
  *
  * 3. 状态提示：
@@ -96,7 +99,7 @@ function sendTweetInfo(tweet, type) {
     // 使用 GM_xmlhttpRequest 发送数据
     GM_xmlhttpRequest({
         method: 'POST',
-        url: 'https://x.defg.uk/lark/add',
+        url: 'https://xlarktask.defg.uk/lark/add',
         headers: {
             'Content-Type': 'application/json'
         },
