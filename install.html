@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>油猴脚本安装</title>
+<style>
+  :root {
+    --bg: #f2f2f7;
+    --card: #ffffff;
+    --text: #1c1c1e;
+    --sub: #6e6e73;
+    --line: #e5e5ea;
+    --accent: #007aff;
+    --tag-bg: #eef4ff;
+    --warn: #b25000;
+    --warn-bg: #fff4e5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --card: #1c1c1e;
+      --text: #f2f2f7;
+      --sub: #98989f;
+      --line: #2c2c2e;
+      --accent: #0a84ff;
+      --tag-bg: #1a2a40;
+      --warn: #ffb340;
+      --warn-bg: #3a2a10;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    -webkit-text-size-adjust: 100%;
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+  main { max-width: 560px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 12px 4px 4px; }
+  .intro { color: var(--sub); font-size: 14px; margin: 0 4px 16px; line-height: 1.5; }
+  h2 { font-size: 13px; font-weight: 600; color: var(--sub); text-transform: uppercase; margin: 22px 4px 8px; }
+  .group { background: var(--card); border-radius: 12px; overflow: hidden; }
+  a.item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; text-decoration: none; color: inherit;
+    border-top: 1px solid var(--line);
+  }
+  a.item:first-child { border-top: none; }
+  a.item:active { background: var(--line); }
+  .info { flex: 1; min-width: 0; }
+  .name { font-size: 17px; font-weight: 600; }
+  .ver { font-size: 12px; font-weight: 500; color: var(--sub); margin-left: 6px; }
+  .desc { font-size: 14px; color: var(--sub); margin-top: 3px; line-height: 1.4; }
+  .note { font-size: 13px; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 4px 8px; margin-top: 6px; display: inline-block; }
+  .btn {
+    flex: none; font-size: 15px; font-weight: 600; color: var(--accent);
+    background: var(--tag-bg); border-radius: 16px; padding: 6px 14px;
+  }
+  .tips { font-size: 13px; color: var(--sub); line-height: 1.6; margin: 22px 4px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>油猴脚本安装</h1>
+  <p class="intro">点一项就打开对应脚本，Safari 的脚本扩展（Userscripts / Stay / Tampermonkey）会提示安装。</p>
+
+  <h2>X / Twitter</h2>
+  <div class="group">
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/xbutton.user.js">
+      <div class="info"><div class="name">x-button-adder<span class="ver">v1.5</span></div>
+        <div class="desc">给 X 加自定义按钮（发到 xlarktask）</div></div>
+      <span class="btn">安装</span></a>
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/x.user.js">
+      <div class="info"><div class="name">x-tab-switcher<span class="ver">v3.0</span></div>
+        <div class="desc">去掉前两个标签页，默认显示第三个，隐藏"打开 App"提示</div>
+        <div class="note">和 iPad 版二选一，别同时装</div></div>
+      <span class="btn">安装</span></a>
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/xipad.user.js">
+      <div class="info"><div class="name">x-ipad-tab-switcher<span class="ver">v3.0</span></div>
+        <div class="desc">iPad 版：去掉前两个标签页，默认显示第三个</div>
+        <div class="note">和上面那个二选一，别同时装</div></div>
+      <span class="btn">安装</span></a>
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/xto.user.js">
+      <div class="info"><div class="name">x-to-expander<span class="ver">v2.2</span></div>
+        <div class="desc">t.co 短链接换成原始链接</div></div>
+      <span class="btn">安装</span></a>
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/xdeletemore.user.js">
+      <div class="info"><div class="name">X Delete Discover More<span class="ver">v1.0</span></div>
+        <div class="desc">删掉"发现更多"区块</div></div>
+      <span class="btn">安装</span></a>
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/xhideright.user.js">
+      <div class="info"><div class="name">x右侧隐藏<span class="ver">v1.0</span></div>
+        <div class="desc">隐藏右侧边栏全屏显示，去掉发帖按钮</div></div>
+      <span class="btn">安装</span></a>
+  </div>
+
+  <h2>ChatGPT</h2>
+  <div class="group">
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/chatgptclear.user.js">
+      <div class="info"><div class="name">ChatGPT Clear Button<span class="ver">v2.2</span></div>
+        <div class="desc">加一个清空按钮</div></div>
+      <span class="btn">安装</span></a>
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/chatgptfingercopy.user.js">
+      <div class="info"><div class="name">ChatGPT Swipe to Input<span class="ver">v1.22</span></div>
+        <div class="desc">单指右滑把文本填进输入框，不弹输入法</div></div>
+      <span class="btn">安装</span></a>
+  </div>
+
+  <h2>NotebookLM</h2>
+  <div class="group">
+    <a class="item" href="https://aimoment29.github.io/PublicTemp/notebooklmspeed.user.js">
+      <div class="info"><div class="name">notebooklm-speed<span class="ver">v1.1</span></div>
+        <div class="desc">自动 1.8 倍速播放</div></div>
+      <span class="btn">安装</span></a>
+  </div>
+
+  <p class="tips">打开后只看到一页代码、没弹安装框：点地址栏左边的「大小」/拼图图标，打开脚本扩展，里面会有"安装"按钮。</p>
+</main>
+</body>
+</html>
